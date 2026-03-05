@@ -212,13 +212,13 @@ samySam/
 
 > **Quoi** : Création d'une commande en base, paiement via Stripe Checkout, gestion du succès/annulation.
 
-| Fichier              | Rôle                                                                                                      |
-| -------------------- | --------------------------------------------------------------------------------------------------------- |
-| `OrderController`    | `index()` (mes commandes), `checkout()` (POST), `success/{ref}`, `cancel/{ref}` |
-| `OrderService`       | `createOrder()`, `getOrdersForUser()`, `saveStripeSession()`, `markAsPaid()`, `markAsCancelled()`, `findByReference()` |
-| `StripeService`      | `createCheckoutSession()` → Appel API Stripe                                                              |
+| Fichier              | Rôle                                                                                                                          |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `OrderController`    | `index()` (mes commandes), `checkout()` (POST), `success/{ref}`, `cancel/{ref}`                                               |
+| `OrderService`       | `createOrder()`, `getOrdersForUser()`, `saveStripeSession()`, `markAsPaid()`, `markAsCancelled()`, `findByReference()`        |
+| `StripeService`      | `createCheckoutSession()` → Appel API Stripe                                                                                  |
 | `Order` (Entity)     | `reference` (auto-généré), `totalAmount` (centimes), `status` (pending/paid/cancelled), `stripeSessionId`, `user` (ManyToOne) |
-| `OrderItem` (Entity) | Snapshot : `productName`, `unitPriceCents`, `quantity`, `totalCents` + relations `order`, `product`       |
+| `OrderItem` (Entity) | Snapshot : `productName`, `unitPriceCents`, `quantity`, `totalCents` + relations `order`, `product`                           |
 
 **Comment ça marche (flux checkout)** :
 
@@ -256,13 +256,14 @@ samySam/
 
 > **Quoi** : Page permettant à chaque utilisateur de consulter l'historique de ses commandes (référence, date, articles, total, statut).
 
-| Fichier                 | Rôle                                                                        |
-| ----------------------- | --------------------------------------------------------------------------- |
-| `OrderController`       | `index()` → Récupère les commandes de l'utilisateur connecté via le service |
+| Fichier                 | Rôle                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| `OrderController`       | `index()` → Récupère les commandes de l'utilisateur connecté via le service           |
 | `OrderService`          | `getOrdersForUser(User $user)` → `findBy(['user' => $user], ['createdAt' => 'DESC'])` |
-| `order/index.html.twig` | Tableau listant les commandes avec badge de statut (payée/annulée/en attente) |
+| `order/index.html.twig` | Tableau listant les commandes avec badge de statut (payée/annulée/en attente)         |
 
 **Comment ça marche** :
+
 1. L'utilisateur clique sur "Mes commandes" dans la navbar
 2. `OrderController::index()` récupère l'utilisateur connecté via `$this->getUser()`
 3. `OrderService::getOrdersForUser()` interroge le repository avec filtre sur `user` et tri par `createdAt DESC`
@@ -300,14 +301,14 @@ samySam/
 
 > **Quoi** : Inscription, connexion et déconnexion des utilisateurs.
 
-| Fichier                       | Rôle                                                                                 |
-| ----------------------------- | ------------------------------------------------------------------------------------ |
-| `SecurityController`          | `login()`, `register()`, `logout()`                                                  |
+| Fichier                       | Rôle                                                                                                       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `SecurityController`          | `login()`, `register()`, `logout()`                                                                        |
 | `User` (Entity)               | `email` (unique), `roles` (JSON), `password` (hashé), `plainPassword` (non-persisté), `orders` (OneToMany) |
-| `UserRepository`              | `upgradePassword()` (rehash automatique)                                             |
-| `security.yaml`               | Firewalls, form_login, access_control                                                |
-| `security/login.html.twig`    | Formulaire de connexion                                                              |
-| `security/register.html.twig` | Formulaire d'inscription avec validation                                             |
+| `UserRepository`              | `upgradePassword()` (rehash automatique)                                                                   |
+| `security.yaml`               | Firewalls, form_login, access_control                                                                      |
+| `security/login.html.twig`    | Formulaire de connexion                                                                                    |
+| `security/register.html.twig` | Formulaire d'inscription avec validation                                                                   |
 
 **Contrôle d'accès** (défini dans `security.yaml`) :
 

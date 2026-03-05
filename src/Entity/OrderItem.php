@@ -12,7 +12,7 @@ class OrderItem
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Order::class)]
+    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderItems')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Order $order = null;
 
