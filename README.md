@@ -396,17 +396,17 @@ php bin/console doctrine:fixtures:load
 │ price        │ (€)   │ totalAmount  │  (centimes)
 │ stock        │       │ status       │  (pending/paid/cancelled)
 │ category     │       │ stripeSessionId │
-└──────────────┘       │ user         │  (ManyToOne → User)
-                       │ createdAt    │
-                       │ orderItems ◄─┤
-                       └──────┬───────┘
-                              │ 1:N
-                       ┌──────▼───────┐
-                       │  OrderItem   │
-                       ├──────────────┤
-                       │ id           │
-                       │ order        │
-                       │ product      │
+│              │       │ user         │  (ManyToOne → User)
+└──────┬───────┘       │ createdAt    │
+       │               │ orderItems ◄─┤
+       │               └──────┬───────┘
+       │                      │ 1:N
+       │ N:1           ┌──────▼───────┐
+       │               │  OrderItem   │
+       │               ├──────────────┤
+       │               │ id           │
+       └───────────────► product      │  (ManyToOne → Product)
+                       │ order        │  (ManyToOne → Order)
                        │ productName  │  (snapshot)
                        │ unitPriceCents│ (snapshot)
                        │ quantity     │
