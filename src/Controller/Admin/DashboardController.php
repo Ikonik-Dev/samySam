@@ -2,19 +2,17 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Category;
-use App\Entity\Product;
+use App\Controller\Admin\CategoryCrudController;
+use App\Controller\Admin\ProductCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
 {
-    #[Route('/admin', name: 'admin')]
     public function index(): Response
     {
         // La page d'accueil de l'admin
@@ -30,9 +28,12 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
-        yield MenuItem::linkToCrud('Categories', 'fa fa-tag', Category::class);
-        yield MenuItem::linkToCrud('Produits', 'fa fa-box', Product::class);
-
-        // yield MenuItem::linkTo(SomeCrudController::class, 'The Label', 'fas fa-list');
+        yield MenuItem::linkTo(CategoryCrudController::class, 'Categories', 'fa fa-tag');
+        yield MenuItem::linkTo(ProductCrudController::class, 'Produits', 'fa fa-box');
+        yield MenuItem::linkTo(UserCrudController::class, 'Utilisateurs', 'fa fa-users');
+        // Lien de redirection vers la page d'accueil du site
+        yield MenuItem::linkToRoute('retour au site', 'fa fa-undo', 'app_shop_index');
+        // Lien de déconnexion
+        yield MenuItem::linkToLogout('Se déconnecter', 'fa fa-sign-out');
     }
 }

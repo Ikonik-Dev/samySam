@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Boutique
+{% endblock %}
+
+{% block body %}
+	<div
+		class="row">
+
+		{# Colonne gauche : filtre catégories #}
+		<div class="col-md-3">
+			<div class="card mb-4">
+				<div class="card-header fw-bold">Catégories</div>
+				<div class="list-group list-group-flush">
+					<a href="{{ path('app_shop_index') }}" class="list-group-item list-group-item-action
+							                          {% if currentCategory == 0 %}active{% endif %}">
+						Tous les produits
+					</a>
+					{% for category in categories %}
+						<a href="{{ path('app_shop_index', {category: category.id}) }}" class="list-group-item list-group-item-action
+								                              {% if currentCategory == category.id %}active{% endif %}">
+							{{ category.name }}
+						</a>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		{# Colonne droite : produits #}
+		<div class="col-md-9">
+			{% if products is empty %}
+				<div class="alert alert-info">Aucun produit disponible.</div>
+			{% else %}
+				<div class="row row-cols-1 row-cols-md-3 g-4">
+					{% for product in products %}
+						<div class="col">
+							<div class="card h-100 shadow-sm">
+								<div class="card-body">
+									<span class="badge bg-secondary mb-2">
+										{{ product.category.name }}
+									</span>
+									<h5 class="card-title">{{ product.name }}</h5>
+									<p class="card-text text-muted small">
+										{{ product.description|default('Pas de description')|slice(0, 80) }}
+									</p>
+									<p class="fw-bold text-success fs-5">
+										{{ product.price|number_format(2, ',', ' ') }}
+										€
+									</p>
+									<small class="text-muted">
+										Stock :
+										{{ product.stock }}
+									</small>
+								</div>
+								<div class="card-footer bg-white">
+									<form method="post" action="{{ path('app_cart_add', {id: product.id}) }}">
+										<button type="submit" class="btn btn-primary w-100" {% if product.stock == 0 %} disabled {% endif %}>
+											Ajouter au panier
+										</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		</div>
+
+	</div>
+{% endblock %}

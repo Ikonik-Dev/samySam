@@ -19,25 +19,46 @@ class ProductRepository extends ServiceEntityRepository
     //    /**
     //     * @return Product[] Returns an array of Product objects
     //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
 
-    //    public function findOneBySomeField($value): ?Product
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Produits en stock, avec leur catégorie chargée.
+     *
+     * @return Product[]
+     */
+    public function findAvailable(): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->join('p.category', 'c')
+            ->addSelect('c')
+            ->where('p.stock > 0')
+            ->orderBy('p.name', 'ASC')
+            ->getQuery();
+
+        /** @var Product[] $results */
+        $results = $qb->getResult();
+
+        return $results;
+    }
+
+    /**
+     * Produits en stock d'une catégorie donnée.
+     *
+     * @return Product[]
+     */
+    public function findAvailableByCategory(int $categoryId): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->join('p.category', 'c')
+            ->addSelect('c')
+            ->where('p.stock > 0')
+            ->andWhere('p.category = :catId')
+            ->setParameter('catId', $categoryId)
+            ->orderBy('p.name', 'ASC')
+            ->getQuery();
+
+        /** @var Product[] $results */
+        $results = $qb->getResult();
+
+        return $results;
+    }
 }

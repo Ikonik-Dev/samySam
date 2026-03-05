@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes commandes{% endblock %}
+
+{% block body %}
+<h2 class="mb-4">Mes commandes</h2>
+
+{% if orders is empty %}
+    <div class="alert alert-info">Vous n'avez pas encore passé de commande.</div>
+    <a href="{{ path('app_shop_index') }}" class="btn btn-primary">Voir la boutique</a>
+{% else %}
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Référence</th>
+                    <th>Date</th>
+                    <th>Articles</th>
+                    <th>Total</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td><code>{{ order.reference }}</code></td>
+                        <td>{{ order.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>
+                            <ul class="list-unstyled mb-0">
+                                {% for item in order.orderItems %}
+                                    <li>{{ item.productName }} &times; {{ item.quantity }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td class="fw-bold">{{ (order.totalAmount / 100)|number_format(2, ',', ' ') }} €</td>
+                        <td>
+                            {% if order.status == 'paid' %}
+                                <span class="badge bg-success">Payée</span>
+                            {% elseif order.status == 'cancelled' %}
+                                <span class="badge bg-danger">Annulée</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

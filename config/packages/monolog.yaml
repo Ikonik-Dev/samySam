@@ -1,6 +1,11 @@
 monolog:
+    # Déclaration de channels personnalisés. On ajoute un canal `order`
+    # qui servira pour logger spécifiquement les erreurs liées au processus
+    # de commande (checkout, création de commande, etc.). Cela permet de
+    # séparer ces logs des logs applicatifs généraux.
     channels:
         - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+        - order
 
 when@dev:
     monolog:
@@ -14,6 +19,12 @@ when@dev:
                 type: console
                 process_psr_3_messages: false
                 channels: ["!event", "!doctrine", "!console"]
+            # Handler dédié pour les erreurs de commande durant le dev
+            order:
+                type: stream
+                path: "%kernel.logs_dir%/order_%kernel.environment%.log"
+                level: error
+                channels: [order]
 
 when@test:
     monolog:
@@ -28,6 +39,12 @@ when@test:
                 type: stream
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
+            # Handler dédié pour les erreurs de commande durant les tests
+            order:
+                type: stream
+                path: "%kernel.logs_dir%/order_%kernel.environment%.log"
+                level: error
+                channels: [order]
 
 when@prod:
     monolog:
@@ -52,4 +69,13 @@ when@prod:
                 type: stream
                 channels: [deprecation]
                 path: php://stderr
+                formatter: monolog.formatter.json
+            # Handler dédié pour les erreurs de commande en production.
+            # On logge au format JSON (facilement ingérable par des outils
+            # de monitoring) et on écrit dans un fichier séparé.
+            order:
+                type: stream
+                path: "%kernel.logs_dir%/order_%kernel.environment%.log"
+                level: error
+                channels: [order]
                 formatter: monolog.formatter.json

@@ -8,6 +8,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
+/** @extends AbstractCrudController<Category> */
 class CategoryCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
@@ -16,7 +17,7 @@ class CategoryCrudController extends AbstractCrudController
         // Dit à Easyadmin: ce controller gere l'entité Category
     }
 
-    
+
     public function configureFields(string $pageName): iterable
     {
         // Quels champs afficher dans les listes et formulaires ?
@@ -24,5 +25,4 @@ class CategoryCrudController extends AbstractCrudController
         // hideform() -> l'ID s'affiche dans la liste mais pas dans le formulaire.
         yield TextField::new('name', 'nom de la categorie');
     }
-    
 }

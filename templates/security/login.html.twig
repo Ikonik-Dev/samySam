@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">Connexion</h4>
+            </div>
+            <div class="card-body">
+
+                {# Affiche une alerte si une erreur de connexion est présente #}
+                {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                 {# Formulaire de connexion #}
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Email</label>
+                        <input type="email"
+                               id="username"
+                               name="_username"
+                               class="form-control"
+                               value="{{ last_username }}"
+                               required
+                               autofocus>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password"
+                               id="password"
+                               name="_password"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <input type="hidden"
+                           name="_csrf_token"
+                           value="{{ csrf_token('authenticate') }}">
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Se connecter
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p class="mb-0">Pas encore de compte ?
+                        <a href="{{ path('app_register') }}">Créer un compte</a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

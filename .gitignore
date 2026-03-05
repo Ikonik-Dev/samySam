@@ -1,6 +1,5 @@
 
 ###> symfony/framework-bundle ###
-/.env
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -12,6 +11,7 @@
 
 ###> phpunit/phpunit ###
 /phpunit.xml
+/phpunit.dist.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 
@@ -19,3 +19,30 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# ── Fichiers d'environnement sensibles ──
+/.env.dev
+/.env.test
+/.env.*.local
+
+# ── Tests ──
+/tests/
+/bin/phpunit
+
+# ── Analyse statique / outils dev ──
+/phpstan*.neon
+
+# ── Documentation interne ──
+/MIGRATION_PLAN.md
+
+# ── Docker (config locale) ──
+/compose.override.yaml
+
+# ── Fichier auto-généré Symfony ──
+/config/reference.php
+
+# ── IDE / éditeurs ──
+/.idea/
+/.vscode/
+*.swp
+*.swo
