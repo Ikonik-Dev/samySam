@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,6 +36,7 @@ class SecurityController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $em,
         ValidatorInterface $validator,
+        MailerService $mailerService,
     ): Response {
         // si l'utilisateur est déjà connecté, on le redirige
         if ($this->getUser()) {
@@ -85,6 +87,9 @@ class SecurityController extends AbstractController
                     if (empty($errors)) {
                         $em->persist($user);
                         $em->flush();
+
+                        // Envoi de l'email de bienvenue
+                        $mailerService->sendWelcomeEmail($email);
 
                         $this->addFlash('success', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
 

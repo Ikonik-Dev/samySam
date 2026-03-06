@@ -19,6 +19,7 @@ Ce projet sert de base pédagogique pour comprendre l'architecture MVC d'une bou
     - [Authentification](#6--authentification)
     - [Administration EasyAdmin](#7--administration-easyadmin)
     - [Fixtures de données](#8--fixtures-de-données)
+    - [Emails (contact, bienvenue, commande)](#9--emails-contact-bienvenue-commande)
 5. [Modèle de données](#modèle-de-données)
 6. [Routes principales](#routes-principales)
 7. [Configuration](#configuration)
@@ -82,6 +83,7 @@ samySam/
 │   │   ├── CartController        → Gestion du panier
 │   │   ├── OrderController       → Checkout, succès, annulation, historique
 │   │   ├── SecurityController    → Login, register, logout
+│   │   ├── MailController         → Formulaire de contact
 │   │   ├── StripeWebhookController → Réception des webhooks Stripe
 │   │   └── Admin/                → CRUD EasyAdmin
 │   │       ├── DashboardController
@@ -99,6 +101,9 @@ samySam/
 │   ├── Model/                # Objets non-persistés
 │   │   └── CartItem              → Élément du panier (stocké en session)
 │   │
+│   ├── Form/                 # Formulaires Symfony
+│   │   └── ContactType           → Formulaire de contact (nom, email, message)
+│   │
 │   ├── Repository/           # Requêtes Doctrine personnalisées
 │   │   ├── ProductRepository     → findAvailable(), findAvailableByCategory()
 │   │   ├── CategoryRepository    → (héritage ServiceEntityRepository)
@@ -109,7 +114,8 @@ samySam/
 │   │   ├── ProductService        → Récupération produits & catégories
 │   │   ├── CartService           → Gestion du panier en session
 │   │   ├── OrderService          → Création commande, gestion stock, statuts, historique
-│   │   └── StripeService         → Création de session Stripe Checkout
+│   │   ├── StripeService         → Création de session Stripe Checkout
+│   │   └── MailerService         → Envoi d'emails (contact, bienvenue, commande)
 │   │
 │   └── DataFixtures/         # Données initiales
 │       └── AppFixtures           → Admin + catégories + produits de démo
@@ -128,6 +134,13 @@ samySam/
 │   ├── security/
 │   │   ├── login.html.twig       → Formulaire de connexion
 │   │   └── register.html.twig    → Formulaire d'inscription
+│   ├── contact/
+│   │   └── index.html.twig       → Formulaire de contact
+│   ├── mail/
+│   │   ├── base.html.twig        → Layout commun des emails
+│   │   ├── contact.html.twig     → Email de contact
+│   │   ├── welcome.html.twig     → Email de bienvenue
+│   │   └── order_confirmation.html.twig → Récap commande
 │   └── admin/
 │       └── dashboard.html.twig   → Tableau de bord admin
 │
@@ -228,6 +241,7 @@ samySam/
     - Crée l'entité `Order` avec référence unique (`ORD-XXXXXXXXXX`) et l'associe à l'utilisateur connecté
     - Pour chaque `CartItem` : récupère le `Product` avec **verrou pessimiste** (`PESSIMISTIC_WRITE`), vérifie le stock, le décrémente, crée un `OrderItem` (snapshot du nom et prix)
     - Commit ou rollback en cas d'erreur
+    - **Envoi du récapitulatif par email** via `MailerService::sendOrderConfirmationEmail()`
 3. **`StripeService::createCheckoutSession()`** :
     - Configure `Stripe::setApiKey()`
     - Construit les `line_items` (prix en centimes, nom, quantité)
@@ -322,7 +336,7 @@ samySam/
 
 **Comment ça marche** :
 
-1. **Inscription** : Validation manuelle (CSRF, longueur mot de passe, confirmation, unicité email) + hashage `UserPasswordHasherInterface` + persist
+1. **Inscription** : Validation manuelle (CSRF, longueur mot de passe, confirmation, unicité email) + hashage `UserPasswordHasherInterface` + persist + **envoi email de bienvenue** via `MailerService`
 2. **Connexion** : Gérée par le composant Security de Symfony (`form_login`)
 3. **Déconnexion** : Route interceptée par Symfony, méthode vide
 
@@ -372,6 +386,31 @@ samySam/
 ```bash
 php bin/console doctrine:fixtures:load
 ```
+
+---
+
+### 9 — Emails (contact, bienvenue, commande)
+
+> **Quoi** : Envoi d'emails transactionnels via le composant Mailer de Symfony : formulaire de contact, bienvenue à l'inscription, récapitulatif de commande.
+
+| Fichier                              | Rôle                                                                          |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| `MailController`                     | `contact()` — affiche et traite le formulaire de contact                      |
+| `MailerService`                      | `sendContactEmail()`, `sendWelcomeEmail()`, `sendOrderConfirmationEmail()`    |
+| `ContactType` (Form)                 | Formulaire : nom, email, message (avec contraintes de validation)             |
+| `mail/base.html.twig`                | Layout HTML commun à tous les emails (header Shop, footer)                    |
+| `mail/contact.html.twig`             | Template email de contact (nom, email, message)                               |
+| `mail/welcome.html.twig`             | Template email de bienvenue (confirmation d'inscription)                      |
+| `mail/order_confirmation.html.twig`  | Template récapitulatif de commande (tableau articles, total, statut)           |
+| `contact/index.html.twig`            | Page du formulaire de contact                                                 |
+
+**Déclencheurs** :
+
+1. **Contact** : L'utilisateur soumet le formulaire → `MailerService::sendContactEmail()` envoie à `admin@shop.fr`
+2. **Inscription** : Après `persist` + `flush` du User → `MailerService::sendWelcomeEmail()` envoie à l'adresse de l'utilisateur
+3. **Commande** : Après `createOrder()` dans le checkout → `MailerService::sendOrderConfirmationEmail()` envoie le récap (articles, prix, total) à l'utilisateur
+
+**Configuration** : Variable `MAILER_DSN` dans `.env.local` (ex: `smtp://localhost:1025` pour Mailpit/Mailhog en dev).
 
 ---
 
@@ -438,6 +477,7 @@ php bin/console doctrine:fixtures:load
 | GET      | `/login`               | `app_login`          | `SecurityController::login`    | Public      |
 | GET/POST | `/register`            | `app_register`       | `SecurityController::register` | Public      |
 | GET      | `/logout`              | `app_logout`         | `SecurityController::logout`   | Authentifié |
+| GET/POST | `/contact`             | `app_contact`        | `MailController::contact`      | Public      |
 | GET      | `/admin`               | `admin`              | `DashboardController::index`   | ROLE_ADMIN  |
 
 > (\*) Le webhook Stripe est public mais protégé par vérification de signature.

@@ -1,0 +1,37 @@
+{% extends 'mail/base.html.twig' %}
+
+{% block content %}
+    <h2>Confirmation de commande</h2>
+    <p>Bonjour,</p>
+    <p>Votre commande <strong>{{ order.reference }}</strong> a bien été enregistrée le {{ order.createdAt|date('d/m/Y à H:i') }}.</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+            <tr style="background: #4A90E2; color: white;">
+                <th style="padding: 8px; text-align: left;">Produit</th>
+                <th style="padding: 8px; text-align: center;">Qté</th>
+                <th style="padding: 8px; text-align: right;">Prix unit.</th>
+                <th style="padding: 8px; text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.orderItems %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;">{{ item.productName }}</td>
+                    <td style="padding: 8px; text-align: center;">{{ item.quantity }}</td>
+                    <td style="padding: 8px; text-align: right;">{{ (item.unitPriceCents / 100)|number_format(2, ',', ' ') }} €</td>
+                    <td style="padding: 8px; text-align: right;">{{ (item.totalCents / 100)|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="font-weight: bold; background: #f0f0f0;">
+                <td colspan="3" style="padding: 8px; text-align: right;">Total :</td>
+                <td style="padding: 8px; text-align: right;">{{ (order.totalAmount / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <p><strong>Statut :</strong> En attente de paiement</p>
+    <p>Merci pour votre confiance !</p>
+{% endblock %}

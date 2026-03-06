@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Service\CartService;
+use App\Service\MailerService;
 use App\Service\OrderService;
 use App\Service\StripeService;
 use Psr\Log\LoggerInterface;
@@ -35,6 +36,7 @@ class OrderController extends AbstractController
         CartService $cartService,
         OrderService $orderService,
         StripeService $stripeService,
+        MailerService $mailerService,
         LoggerInterface $logger,
         CsrfTokenManagerInterface $csrfTokenManager,
     ): Response {
@@ -65,6 +67,9 @@ class OrderController extends AbstractController
             /** @var User $user */
             $user = $this->getUser();
             $order = $orderService->createOrder($user, $total, $cart);
+
+            // Envoi du récapitulatif de commande par email
+            $mailerService->sendOrderConfirmationEmail($order);
         } catch (\Throwable $e) {
             // QUOI : on logge l'exception remontée lors de la création de la commande
             // POURQUOI : conserver le détail technique (stack trace, message) dans les logs
